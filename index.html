@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>Sun Store | Official Store</title>
+<style>
+:root{--bg:#101010;--panel:#191919;--yellow:#ffd43b;--text:#f7f7f7;--muted:#aaa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{position:sticky;top:0;background:#101010ee;backdrop-filter:blur(12px);border-bottom:1px solid #303030;z-index:5}
+nav{max-width:1100px;margin:auto;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:24px;font-weight:900;letter-spacing:-1px}.logo span{color:var(--yellow)}
+button,input{font:inherit}
+button{cursor:pointer;border:0;border-radius:10px;padding:12px 16px;font-weight:bold}
+.primary{background:var(--yellow);color:#111}
+.cartbtn{background:#292929;color:white}
+main{max-width:1100px;margin:auto;padding:24px 20px 70px}
+.hero{padding:44px 26px;border-radius:22px;background:linear-gradient(120deg,#29230d,#171717 65%);border:1px solid #443b1a}
+.eyebrow{color:var(--yellow);font-size:12px;font-weight:bold;letter-spacing:2px}
+h1{font-size:clamp(36px,7vw,66px);line-height:1.02;margin:14px 0}
+.hero p{color:#ccc;max-width:440px;line-height:1.6}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0}
+input{background:#202020;border:1px solid #373737;border-radius:10px;color:white;padding:13px;min-width:0}
+#search{flex:1;min-width:170px}
+.filters{display:flex;gap:8px;overflow:auto;padding-bottom:8px}
+.filters button{white-space:nowrap;background:#222;color:#ddd}
+.filters button.active{background:var(--yellow);color:#111}
+.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:28px 0 16px}
+.sectionhead h2{margin:0;font-size:22px}
+#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px}
+.product{background:var(--panel);border:1px solid #303030;border-radius:16px;overflow:hidden}
+.art{height:170px;display:grid;place-items:center;font-size:66px;background:radial-gradient(circle at 50% 35%,#ffffff20,transparent 65%),#242424}
+.info{padding:16px}
+.info small{color:var(--yellow)}
+.info h3{margin:8px 0}
+.info p{color:var(--muted);font-size:13px;line-height:1.5;min-height:38px}
+.buyrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:15px}
+.price{font-weight:900}
+.empty{color:var(--muted);padding:30px 0}
+footer{border-top:1px solid #303030;padding:24px;text-align:center;color:#888;font-size:13px}
+.overlay{display:none;position:fixed;inset:0;background:#000a;z-index:9}
+.overlay.show{display:block}
+.drawer{position:absolute;right:0;top:0;height:100%;width:min(420px,100%);background:#171717;padding:22px;overflow:auto}
+.drawerhead{display:flex;justify-content:space-between;align-items:center}
+.cartitem{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #333}
+.cartitem small{display:block;color:#aaa;margin-top:6px}
+.cartitem button{padding:6px 10px;background:#333;color:white}
+.total{display:flex;justify-content:space-between;font-size:20px;font-weight:bold;margin:24px 0}
+#checkout{width:100%}
+#notice{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);background:var(--yellow);color:#111;padding:13px 20px;border-radius:12px;font-weight:bold;opacity:0;transition:.2s;z-index:20;pointer-events:none}
+#notice.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:480px){nav{padding:14px}.logo{font-size:21px}main{padding:16px 14px 50px}.hero{padding:30px 20px}#products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.art{height:125px;font-size:48px}.info{padding:11px}.info h3{font-size:15px}.info p{font-size:12px}.buyrow{align-items:flex-start;flex-direction:column}.buyrow button{width:100%;padding:10px}}
+</style>
+</head>
+<body>
+<header><nav>
+<div class="logo">SUN <span>STORE</span></div>
+<button class="cartbtn" id="openCart">Cart (<span id="count">0</span>)</button>
+</nav></header>
+<main>
+<section class="hero">
+<div class="eyebrow">WELCOME TO SUN STORE</div>
+<h1>Small details.<br>Big energy.</h1>
+<p>Discover your next favourite design. Browse the collection and build your cart.</p>
+<button class="primary" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">Explore collection ↓</button>
+</section>
+<div class="tools">
+<input id="search" placeholder="Search products..." aria-label="Search products">
+</div>
+<div class="filters" id="filters"></div>
+<section id="shop">
+<div class="sectionhead"><h2>Our collection</h2><span id="resultCount" style="color:#aaa;font-size:13px"></span></div>
+<div id="products"></div>
+</section>
+</main>
+<footer>© <span id="year"></span> Sun Store · Erbil, Iraq</footer>
+<div class="overlay" id="overlay">
+<div class="drawer">
+<div class="drawerhead"><h2>Your cart</h2><button class="cartbtn" id="closeCart">Close ✕</button></div>
+<div id="cartItems"></div>
+<div class="total"><span>Total</span><span id="total">0 IQD</span></div>
+<div style="display:grid;gap:10px;margin:16px 0">
+    <input id="customerName" placeholder="Your name" maxlength="100" autocomplete="name" required>
+    <input id="customerPhone" placeholder="Your phone number" maxlength="40" autocomplete="tel" required>
+  </div>
+  <button class="primary" id="checkout">Place order</button>
+<p style="color:#999;font-size:12px;line-height:1.5">Your order is saved to the store database before WhatsApp opens. Payment is not processed on this website.</p>
+</div>
+</div>
+<div id="notice"></div>
+<script>
+"use strict";
+
+let products = [];
+let cart = {};
+let category = "All";
+
+const $ = id => document.getElementById(id);
+const money = n => new Intl.NumberFormat("en-US").format(n) + " IQD";
+const STORE_WHATSAPP = "9647855976493";
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;",
+    '"':"&quot;", "'":"&#39;"
+  })[ch]);
+}
+
+let noticeTimer;
+function notify(message) {
+  $("notice").textContent = message;
+  $("notice").classList.add("show");
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => $("notice").classList.remove("show"), 2600);
+}
+
+async function api(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options.body ? {"Content-Type":"application/json"} : {}),
+      ...(options.headers || {})
+    }
+  });
+
+  let data = {};
+  try {
+    data = await response.json();
+  } catch (_) {
+    data = {};
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || "Request failed (" + response.status + ")");
+  }
+  return data;
+}
+
+async function loadProducts() {
+  $("products").innerHTML = '<p class="empty">Loading products...</p>';
+
+  try {
+    const data = await api("/api/products");
+    if (!Array.isArray(data)) throw new Error("Invalid product data");
+
+    products = data.map(p => ({
+      id: Number(p.id),
+      name: String(p.name || ""),
+      cat: String(p.category || "General"),
+      price: Number(p.price),
+      icon: String(p.icon || "☀️"),
+      desc: String(p.description || ""),
+      stock: Math.max(0, Number(p.stock) || 0)
+    }));
+
+    // Remove unavailable items and clamp quantities to available stock.
+    for (const key of Object.keys(cart)) {
+      const product = products.find(p => p.id === Number(key));
+      if (!product || product.stock <= 0) {
+        delete cart[key];
+      } else if (cart[key] > product.stock) {
+        cart[key] = product.stock;
+      }
+    }
+
+    renderFilters();
+    renderProducts();
+    renderCart();
+  } catch (error) {
+    $("products").innerHTML =
+      '<p class="empty">Could not load products. Check that the Flask server is running, then reload this page.</p>';
+    notify(error.message);
+  }
+}
+
+function renderFilters() {
+  const cats = ["All", ...new Set(products.map(p => p.cat))];
+
+  $("filters").innerHTML = cats.map(c =>
+    `<button class="${category === c ? "active" : ""}" data-cat="${esc(c)}">${esc(c)}</button>`
+  ).join("");
+
+  $("filters").querySelectorAll("[data-cat]").forEach(button => {
+    button.onclick = () => {
+      category = button.dataset.cat;
+      renderFilters();
+      renderProducts();
+    };
+  });
+}
+
+function renderProducts() {
+  const query = $("search").value.trim().toLowerCase();
+
+  const list = products.filter(p =>
+    (category === "All" || p.cat === category) &&
+    (p.name + " " + p.cat + " " + p.desc).toLowerCase().includes(query)
+  );
+
+  $("resultCount").textContent = list.length + " products";
+
+  $("products").innerHTML = list.length ? list.map(p => `
+    <article class="product">
+      <div class="art">${esc(p.icon)}</div>
+      <div class="info">
+        <small>${esc(p.cat)}</small>
+        <h3>${esc(p.name)}</h3>
+        <p>${esc(p.desc)}</p>
+        <div class="buyrow">
+          <div>
+            <div class="price">${money(p.price)}</div>
+            <small>${p.stock > 0 ? esc(p.stock) + " in stock" : "Out of stock"}</small>
+          </div>
+          <button class="primary" data-add="${p.id}" ${p.stock <= 0 ? "disabled" : ""}>
+            ${p.stock > 0 ? "Add to cart +" : "Sold out"}
+          </button>
+        </div>
+      </div>
+    </article>
+  `).join("") : '<p class="empty">No products match your search.</p>';
+
+  $("products").querySelectorAll("[data-add]").forEach(button => {
+    button.onclick = () => {
+      const id = Number(button.dataset.add);
+      const product = products.find(p => p.id === id);
+      if (!product || product.stock <= 0) {
+        notify("This product is unavailable.");
+        return;
+      }
+      if ((cart[id] || 0) >= product.stock) {
+        notify("You have reached the available stock.");
+        return;
+      }
+      cart[id] = (cart[id] || 0) + 1;
+      renderCart();
+      notify("Added to cart");
+    };
+  });
+}
+
+function renderCart() {
+  const items = products.filter(p => cart[p.id] > 0);
+  $("count").textContent = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+
+  $("cartItems").innerHTML = items.length ? items.map(p => `
+    <div class="cartitem">
+      <div>
+        <b>${esc(p.name)}</b>
+        <small>${money(p.price)} each</small>
+      </div>
+      <div>
+        <button data-minus="${p.id}">−</button>
+        ${cart[p.id]}
+        <button data-plus="${p.id}" ${cart[p.id] >= p.stock ? "disabled" : ""}>+</button>
+      </div>
+    </div>
+  `).join("") : '<p class="empty">Your cart is empty.</p>';
+
+  const total = items.reduce((sum, p) => sum + p.price * cart[p.id], 0);
+  $("total").textContent = money(total);
+
+  $("cartItems").querySelectorAll("[data-minus]").forEach(button => {
+    button.onclick = () => {
+      const id = Number(button.dataset.minus);
+      cart[id]--;
+      if (cart[id] <= 0) delete cart[id];
+      renderCart();
+    };
+  });
+
+  $("cartItems").querySelectorAll("[data-plus]").forEach(button => {
+    button.onclick = () => {
+      const id = Number(button.dataset.plus);
+      const product = products.find(p => p.id === id);
+      if (product && cart[id] < product.stock) {
+        cart[id]++;
+        renderCart();
+      }
+    };
+  });
+}
+
+$("search").addEventListener("input", renderProducts);
+$("openCart").onclick = () => $("overlay").classList.add("show");
+$("closeCart").onclick = () => $("overlay").classList.remove("show");
+
+$("overlay").addEventListener("click", event => {
+  if (event.target === $("overlay")) $("overlay").classList.remove("show");
+});
+
+$("checkout").onclick = async () => {
+  const items = products.filter(p => cart[p.id] > 0);
+
+  if (!items.length) {
+    notify("Your cart is empty.");
+    return;
+  }
+
+  const customer = $("customerName").value.trim();
+  const phone = $("customerPhone").value.trim();
+
+  if (!customer || !phone) {
+    notify("Enter your name and phone number.");
+    return;
+  }
+
+  if (items.some(p => cart[p.id] > p.stock || p.stock <= 0)) {
+    notify("Stock changed. Refreshing products.");
+    await loadProducts();
+    return;
+  }
+
+  const button = $("checkout");
+  button.disabled = true;
+  button.textContent = "Saving order...";
+
+  // Open the tab during the click so the browser is less likely to block it.
+  const waWindow = showOrderConfirmation({ orderId: result.order_id, customer, items, total: result.total });
+
+    cart = {};
+    renderCart();
+    await loadProducts();
+
+    $("overlay").classList.remove("show");
+    notify("Order #" + result.order_id + " saved successfully.");
+
+    if (waWindow && !waWindow.closed) {
+      waWindow.location.href = url;
+    } else {
+      notify("Order #" + result.order_id + " saved. Allow pop-ups to open WhatsApp.");
+    }
+  } catch (error) {
+    if (waWindow && !waWindow.closed) waWindow.close();
+    notify("Order failed: " + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Place order";
+  }
+};
+
+$("year").textContent = new Date().getFullYear();
+loadProducts();
+
+
+function showOrderConfirmation({ orderId, customer, items, total }) {
+  document.getElementById("orderConfirmationOverlay")?.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "orderConfirmationOverlay";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.style.cssText =
+    "position:fixed;inset:0;z-index:99999;display:flex;" +
+    "align-items:center;justify-content:center;padding:18px;" +
+    "background:rgba(0,0,0,.78);";
+
+  const panel = document.createElement("section");
+  panel.style.cssText =
+    "width:min(100%,460px);max-height:90vh;overflow:auto;" +
+    "background:#111827;color:#f9fafb;padding:24px;" +
+    "border:1px solid #374151;border-radius:18px;" +
+    "box-shadow:0 20px 60px rgba(0,0,0,.4);font-family:inherit;";
+
+  const title = document.createElement("h2");
+  title.textContent = "Order placed successfully";
+  title.style.cssText = "margin:0 0 12px;font-size:24px;";
+  panel.appendChild(title);
+
+  const note = document.createElement("p");
+  note.textContent = "Your order has been saved in Sun Store.";
+  panel.appendChild(note);
+
+  const orderLine = document.createElement("p");
+  orderLine.textContent = "Order number: #" + orderId;
+  orderLine.style.fontWeight = "700";
+  panel.appendChild(orderLine);
+
+  const customerLine = document.createElement("p");
+  customerLine.textContent = "Customer: " + customer;
+  panel.appendChild(customerLine);
+
+  const heading = document.createElement("h3");
+  heading.textContent = "Items ordered";
+  heading.style.marginTop = "20px";
+  panel.appendChild(heading);
+
+  const list = document.createElement("ul");
+  list.style.cssText = "padding-left:22px;line-height:1.8;";
+
+  const productList =
+    typeof products !== "undefined" && Array.isArray(products)
+      ? products
+      : [];
+
+  (Array.isArray(items) ? items : []).forEach(item => {
+    const product = productList.find(
+      p => String(p.id) === String(item.id)
+    );
+
+    const name =
+      product?.name || item.name || item.productName ||
+      ("Product #" + item.id);
+
+    const quantity = Number(item.quantity) || 1;
+    const entry = document.createElement("li");
+    entry.textContent = name + " × " + quantity;
+    list.appendChild(entry);
+  });
+
+  if (!list.children.length) {
+    const entry = document.createElement("li");
+    entry.textContent = "Order items saved";
+    list.appendChild(entry);
+  }
+
+  panel.appendChild(list);
+
+  const totalLine = document.createElement("p");
+  totalLine.textContent =
+    "Total: IQD " +
+    Number(total || 0).toLocaleString("en-US");
+  totalLine.style.cssText =
+    "font-size:20px;font-weight:700;margin-top:18px;";
+  panel.appendChild(totalLine);
+
+  const adminNote = document.createElement("p");
+  adminNote.textContent =
+    "You can view this order in the Sun Store admin dashboard.";
+  adminNote.style.cssText = "color:#d1d5db;font-size:14px;";
+  panel.appendChild(adminNote);
+
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.textContent = "Continue shopping";
+  closeButton.style.cssText =
+    "width:100%;padding:13px;margin-top:16px;border:0;" +
+    "border-radius:10px;background:#facc15;color:#111827;" +
+    "font-weight:700;font-size:16px;cursor:pointer;";
+
+  closeButton.addEventListener("click", () => {
+    overlay.remove();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  panel.appendChild(closeButton);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  closeButton.focus();
+}
+
+</script>
+</body>
+</html>

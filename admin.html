@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>Sun Store | Admin</title>
+
+<style>
+:root {
+  --bg:#101010;
+  --panel:#191919;
+  --panel2:#222222;
+  --line:#333333;
+  --text:#f5f5f5;
+  --muted:#a5a5a5;
+  --yellow:#ffd43b;
+  --red:#ff6565;
+  --green:#7ee0a0;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,sans-serif;
+}
+button,input,select,textarea { font:inherit; }
+button { cursor:pointer; }
+button:disabled { opacity:.5; cursor:wait; }
+a { color:var(--yellow); }
+header {
+  padding:17px 20px;
+  background:#151515;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.brand { font-size:20px; font-weight:850; }
+.brand span { color:var(--yellow); }
+header small { color:var(--muted); }
+main { width:min(1100px,100%); margin:auto; padding:22px 16px 60px; }
+h1 { font-size:27px; margin:0 0 7px; }
+h2 { font-size:19px; margin:0 0 17px; }
+p { color:var(--muted); }
+.panel {
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:18px;
+  margin:18px 0;
+}
+.stats {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin:20px 0;
+}
+.stat {
+  background:var(--panel);
+  border:1px solid var(--line);
+  padding:16px;
+  border-radius:12px;
+  min-width:0;
+}
+.stat strong { display:block; font-size:25px; color:var(--yellow); }
+.stat span { color:var(--muted); font-size:12px; }
+label { display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+input,select,textarea {
+  width:100%;
+  min-width:0;
+  background:#101010;
+  color:var(--text);
+  border:1px solid #414141;
+  border-radius:9px;
+  padding:11px;
+  outline:none;
+}
+input:focus,select:focus,textarea:focus { border-color:var(--yellow); }
+textarea { resize:vertical; min-height:75px; }
+.field { min-width:0; }
+.form-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:13px;
+}
+.full { grid-column:1 / -1; }
+button {
+  border:0;
+  border-radius:9px;
+  padding:11px 15px;
+  font-weight:750;
+}
+.primary { background:var(--yellow); color:#111; }
+.secondary { background:var(--panel2); color:var(--text); border:1px solid var(--line); }
+.danger { background:#462323; color:#ffaaaa; border:1px solid #693333; }
+.actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:13px; }
+.muted { color:var(--muted); font-size:13px; }
+.hidden { display:none !important; }
+.product-list,.order-list { display:grid; gap:13px; }
+.item-card {
+  background:#151515;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:15px;
+  min-width:0;
+}
+.item-heading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.item-name { font-weight:800; overflow-wrap:anywhere; }
+.icon-large { font-size:25px; }
+.pill {
+  display:inline-block;
+  border:1px solid var(--line);
+  border-radius:100px;
+  padding:4px 9px;
+  color:var(--muted);
+  font-size:11px;
+}
+.pill.active { color:var(--green); }
+.pill.inactive { color:var(--red); }
+.order-info { line-height:1.8; overflow-wrap:anywhere; }
+.order-info strong { color:var(--text); }
+.empty { color:var(--muted); text-align:center; padding:25px 8px; }
+.status-row {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:9px;
+  align-items:end;
+  margin-top:14px;
+}
+.notice { color:var(--muted); font-size:13px; margin-top:10px; }
+.error { color:#ff8585; }
+.success { color:var(--green); }
+#toast {
+  position:fixed;
+  bottom:18px;
+  left:50%;
+  transform:translateX(-50%);
+  max-width:calc(100% - 24px);
+  padding:12px 16px;
+  background:#303030;
+  border:1px solid #555;
+  border-radius:10px;
+  z-index:10;
+  display:none;
+  overflow-wrap:anywhere;
+}
+@media(max-width:520px) {
+  main { padding:18px 12px 45px; }
+  header { padding:14px 12px; }
+  .brand { font-size:17px; }
+  .stats { gap:7px; }
+  .stat { padding:11px 9px; }
+  .stat strong { font-size:21px; }
+  .stat span { font-size:11px; }
+  .panel { padding:13px; }
+  .form-grid { grid-template-columns:1fr; }
+  .full { grid-column:auto; }
+  .status-row { grid-template-columns:1fr; }
+  .status-row button { width:100%; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div>
+    <div class="brand"><span>☀</span> SUN STORE</div>
+    <small>Administration panel</small>
+  </div>
+  <button id="logout" class="secondary hidden" type="button">Log out</button>
+</header>
+
+<main>
+  <section id="login-panel" class="panel">
+    <h1>Admin login</h1>
+    <p>Sign in to manage your store.</p>
+
+    <form id="login-form">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username"
+          autocomplete="username" required maxlength="80">
+      </div>
+
+      <div class="field" style="margin-top:13px">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password"
+          autocomplete="current-password" required>
+      </div>
+
+      <div class="actions">
+        <button id="login-button" class="primary" type="submit">Sign in</button>
+      </div>
+      <p id="login-message" class="notice" role="status"></p>
+    </form>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <h1>Dashboard</h1>
+    <p>Manage products, inventory, and customer orders.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <strong id="stat-products">—</strong>
+        <span>Products</span>
+      </div>
+      <div class="stat">
+        <strong id="stat-stock">—</strong>
+        <span>Total stock</span>
+      </div>
+      <div class="stat">
+        <strong id="stat-orders">—</strong>
+        <span>Total orders</span>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h2>Add a product</h2>
+      <form id="add-form">
+        <div class="form-grid">
+          <div class="field">
+            <label for="new-name">Product name</label>
+            <input id="new-name" required maxlength="120">
+          </div>
+          <div class="field">
+            <label for="new-category">Category</label>
+            <input id="new-category" value="General" maxlength="80" required>
+          </div>
+          <div class="field">
+            <label for="new-price">Price (IQD)</label>
+            <input id="new-price" type="number" min="0" step="1" required>
+          </div>
+          <div class="field">
+            <label for="new-stock">Stock quantity</label>
+            <input id="new-stock" type="number" min="0" step="1" value="0" required>
+          </div>
+          <div class="field">
+            <label for="new-icon">Icon or emoji</label>
+            <input id="new-icon" value="☀️" maxlength="20">
+          </div>
+          <div class="field full">
+            <label for="new-description">Description</label>
+            <textarea id="new-description" maxlength="500"></textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="add-button" class="primary" type="submit">Add product</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="item-heading">
+        <h2 style="margin:0">Products & inventory</h2>
+        <button id="refresh-products" class="secondary" type="button">Refresh</button>
+      </div>
+      <p class="muted">Changes apply to the database. Hidden products stay saved.</p>
+      <div id="product-list" class="product-list">
+        <div class="empty">Loading products...</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="item-heading">
+        <h2 style="margin:0">Orders</h2>
+        <button id="refresh-orders" class="secondary" type="button">Refresh</button>
+      </div>
+      <div id="order-list" class="order-list">
+        <div class="empty">Loading orders...</div>
+      </div>
+    </section>
+
+    <p id="dashboard-message" class="notice" role="status"></p>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const statuses = [
+  "Pending", "Confirmed", "Preparing",
+  "Shipped", "Delivered", "Cancelled"
+];
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[ch]);
+}
+
+function money(value) {
+  return new Intl.NumberFormat("en-US").format(Number(value) || 0) + " IQD";
+}
+
+let toastTimer;
+
+function toast(message) {
+  const box = $("toast");
+  box.textContent = message;
+  box.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => box.style.display = "none", 3200);
+}
+
+async function api(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: "same-origin",
+    ...options,
+    headers: {
+      ...(options.body ? {"Content-Type":"application/json"} : {}),
+      ...(options.headers || {})
+    }
+  });
+
+  const raw = await response.text();
+  let data = {};
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch (_) {
+    data = {error: raw || "Unexpected server response"};
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || `Request failed (${response.status})`);
+  }
+  return data;
+}
+
+function showLogin(message = "") {
+  $("login-panel").classList.remove("hidden");
+  $("dashboard").classList.add("hidden");
+  $("logout").classList.add("hidden");
+  $("login-message").textContent = message;
+  $("login-message").className = "notice";
+}
+
+function showDashboard() {
+  $("login-panel").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  $("logout").classList.remove("hidden");
+}
+
+async function loadProducts() {
+  const products = await api("/api/admin/products");
+
+  $("stat-products").textContent = products.length;
+  $("stat-stock").textContent =
+    products.reduce((sum, p) => sum + Math.max(0, Number(p.stock) || 0), 0);
+
+  if (!products.length) {
+    $("product-list").innerHTML =
+      '<div class="empty">No products yet. Add your first product above.</div>';
+    return;
+  }
+
+  $("product-list").innerHTML = products.map(p => `
+    <article class="item-card">
+      <div class="item-heading">
+        <div>
+          <span class="icon-large">${esc(p.icon || "☀️")}</span>
+          <span class="item-name">${esc(p.name)}</span>
+        </div>
+        <span class="pill ${Number(p.active) ? "active" : "inactive"}">
+          ${Number(p.active) ? "Visible" : "Hidden"}
+        </span>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="p-name-${p.id}">Name</label>
+          <input id="p-name-${p.id}" maxlength="120" value="${esc(p.name)}">
+        </div>
+        <div class="field">
+          <label for="p-category-${p.id}">Category</label>
+          <input id="p-category-${p.id}" maxlength="80" value="${esc(p.category)}">
+        </div>
+        <div class="field">
+          <label for="p-price-${p.id}">Price (IQD)</label>
+          <input id="p-price-${p.id}" type="number" min="0" step="1"
+            value="${esc(p.price)}">
+        </div>
+        <div class="field">
+          <label for="p-stock-${p.id}">Stock</label>
+          <input id="p-stock-${p.id}" type="number" min="0" step="1"
+            value="${esc(p.stock)}">
+        </div>
+        <div class="field">
+          <label for="p-icon-${p.id}">Icon or emoji</label>
+          <input id="p-icon-${p.id}" maxlength="20" value="${esc(p.icon || "☀️")}">
+        </div>
+        <div class="field full">
+          <label for="p-description-${p.id}">Description</label>
+          <textarea id="p-description-${p.id}" maxlength="500">${esc(p.description || "")}</textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="button"
+          onclick="saveProduct(${Number(p.id)})">Save changes</button>
+        <button class="secondary" type="button"
+          onclick="toggleProduct(${Number(p.id)}, ${Number(p.active) ? 0 : 1})">
+          ${Number(p.active) ? "Hide product" : "Show product"}
+        </button>
+      </div>
+    </article>
+  `).join("");
+}
+
+function formatItems(raw) {
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed)) {
+      return parsed.map(item => {
+        if (item && typeof item === "object") {
+          const name = item.name || item.product_name || ("Product #" + (item.id ?? "?"));
+          const qty = item.qty ?? item.quantity ?? 1;
+          const price = item.price == null ? "" : " — " + money(item.price);
+          return `${name} × ${qty}${price}`;
+        }
+        return String(item);
+      }).join("\n");
+    }
+    return JSON.stringify(parsed, null, 2);
+  } catch (_) {
+    return String(raw ?? "");
+  }
+}
+
+async function loadOrders() {
+  const orders = await api("/api/admin/orders");
+  $("stat-orders").textContent = orders.length;
+
+  if (!orders.length) {
+    $("order-list").innerHTML =
+      '<div class="empty">No orders yet. New orders will appear here when the storefront is connected to the order API.</div>';
+    return;
+  }
+
+  $("order-list").innerHTML = orders.map(o => `
+    <article class="item-card">
+      <div class="item-heading">
+        <div class="item-name">Order #${Number(o.id)}</div>
+        <span class="pill">${esc(o.status || "Pending")}</span>
+      </div>
+
+      <div class="order-info">
+        <div><strong>Customer:</strong> ${esc(o.customer || "Not provided")}</div>
+        <div><strong>Phone:</strong> ${esc(o.phone || "Not provided")}</div>
+        <div><strong>Date:</strong> ${esc(o.created_at || "Not available")}</div>
+        <div><strong>Total:</strong> ${money(o.total)}</div>
+        <div style="margin-top:10px"><strong>Items:</strong></div>
+        <pre style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;color:#bbb">${esc(formatItems(o.items))}</pre>
+      </div>
+
+      <div class="status-row">
+        <div class="field">
+          <label for="order-status-${Number(o.id)}">Update status</label>
+          <select id="order-status-${Number(o.id)}">
+            ${statuses.map(s => `<option value="${s}" ${s === o.status ? "selected" : ""}>${s}</option>`).join("")}
+          </select>
+        </div>
+        <button class="primary" type="button"
+          onclick="updateOrder(${Number(o.id)})">Save status</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+async function refreshAll() {
+  $("dashboard-message").textContent = "Refreshing...";
+  try {
+    await Promise.all([loadProducts(), loadOrders()]);
+    $("dashboard-message").textContent = "";
+  } catch (error) {
+    $("dashboard-message").textContent = error.message;
+    $("dashboard-message").className = "notice error";
+    if (/login|unauthorized|401/i.test(error.message)) {
+      showLogin("Your session expired. Sign in again.");
+    }
+    throw error;
+  }
+}
+
+$("login-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = $("login-button");
+  button.disabled = true;
+  $("login-message").textContent = "Signing in...";
+
+  try {
+    await api("/api/admin/login", {
+      method:"POST",
+      body:JSON.stringify({
+        username:$("username").value.trim(),
+        password:$("password").value
+      })
+    });
+
+    $("password").value = "";
+    showDashboard();
+    await refreshAll();
+    toast("Signed in successfully.");
+  } catch (error) {
+    showLogin(error.message);
+    $("login-message").className = "notice error";
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$("add-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = $("add-button");
+  button.disabled = true;
+
+  try {
+    await api("/api/admin/products", {
+      method:"POST",
+      body:JSON.stringify({
+        name:$("new-name").value.trim(),
+        category:$("new-category").value.trim() || "General",
+        price:Number($("new-price").value),
+        stock:Number($("new-stock").value),
+        icon:$("new-icon").value.trim() || "☀️",
+        description:$("new-description").value.trim()
+      })
+    });
+
+    $("add-form").reset();
+    $("new-category").value = "General";
+    $("new-icon").value = "☀️";
+    $("new-stock").value = "0";
+    await loadProducts();
+    toast("Product added.");
+  } catch (error) {
+    toast("Could not add product: " + error.message);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+async function saveProduct(id) {
+  const read = suffix => $(`p-${suffix}-${id}`).value;
+  const price = Number(read("price"));
+  const stock = Number(read("stock"));
+
+  if (!Number.isSafeInteger(price) || price < 0 ||
+      !Number.isSafeInteger(stock) || stock < 0) {
+    toast("Price and stock must be non-negative whole numbers.");
+    return;
+  }
+
+  try {
+    await api(`/api/admin/products/${id}`, {
+      method:"PATCH",
+      body:JSON.stringify({
+        name:read("name").trim(),
+        category:read("category").trim() || "General",
+        price,
+        stock,
+        icon:read("icon").trim() || "☀️",
+        description:read("description").trim()
+      })
+    });
+    await loadProducts();
+    toast("Product updated.");
+  } catch (error) {
+    toast("Could not save product: " + error.message);
+  }
+}
+
+async function toggleProduct(id, active) {
+  try {
+    await api(`/api/admin/products/${id}`, {
+      method:"PATCH",
+      body:JSON.stringify({active})
+    });
+    await loadProducts();
+    toast(active ? "Product is now visible." : "Product hidden.");
+  } catch (error) {
+    toast("Could not change visibility: " + error.message);
+  }
+}
+
+async function updateOrder(id) {
+  const status = $(`order-status-${id}`).value;
+
+  try {
+    await api(`/api/admin/orders/${id}`, {
+      method:"PATCH",
+      body:JSON.stringify({status})
+    });
+    await loadOrders();
+    toast("Order status updated.");
+  } catch (error) {
+    toast("Could not update order: " + error.message);
+  }
+}
+
+$("refresh-products").addEventListener("click", async () => {
+  try {
+    await loadProducts();
+    toast("Products refreshed.");
+  } catch (error) {
+    toast(error.message);
+  }
+});
+
+$("refresh-orders").addEventListener("click", async () => {
+  try {
+    await loadOrders();
+    toast("Orders refreshed.");
+  } catch (error) {
+    toast(error.message);
+  }
+});
+
+$("logout").addEventListener("click", async () => {
+  try {
+    await api("/api/admin/logout", {method:"POST"});
+    showLogin("You have logged out.");
+  } catch (error) {
+    toast("Logout error: " + error.message);
+  }
+});
+
+// Check whether an admin session already exists.
+(async () => {
+  try {
+    await api("/api/admin/products");
+    showDashboard();
+    await refreshAll();
+  } catch (_) {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>
